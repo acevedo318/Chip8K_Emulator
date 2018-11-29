@@ -73,27 +73,160 @@ int main(int argc, char** argv) {
 	init_machine(&window);
 	load_rom(&window);
 	
-	bool mustQuits = 0;
+	int mustQuits = 0;
 	
 	//Si mi valor es diferente del inicial dado detenerse
 	while(!mustQuits){
 		//Leer el opcode
 		uint16_t opcode = (window.mem[window.pc] << 8) | window.mem[window.pc + 1]; //Operacion binaria para leer 2 bytes
 		//Si llego al final de memoria vuelvo al principio
-		if(++window.pc == Memsize){
+		window.pc += 2;
+		if(window.pc == Memsize){
 			window.pc = 0;
-			mustQuits = 1;
-			
+		}
+		
+		///nnn son los 12 bits menos significativos
+		uint16_t nnn = opcode & 0x0FFF;//esto es una mascara de bits
+		//kk son los 8 bits menos sifnificativos
+				uint8_t kk = opcode & 0xFF;
+		//4 bits menos significativos
+			uint8_t n = opcode & 0xF;
+		//4 bits menos significativos en el primer byte
+		uint8_t x = (opcode >> 8) & 0xF;
+		//4 bits menos significativos del segundo byte
+			uint8_t y = (opcode >> 4) & 0xF;
+		
+			uint8_t p  = (opcode >> 12);
+		
+		switch(p){
+			case 0:
+				if(opcode == 0x00E0){
+					//Limpiar pantalla
+					cout<<"CLEAR"<<endl;
+				}else if (n == 0x00EE){
+					//Todo RET --> Vuelve a subrutina
+					cout<<"RET"<<endl;
+				}
+				break;
+			case 1:
+				//JP
+				printf("JP %x\n", nnn);
+				break;
+			case 2:
+				//CALL
+				printf("CALL %x\n", nnn);
+				break;
+			case 3:
+				//SE
+				printf("SE %x, %x\n", x,kk);
+				break;
+			case 4:
+				//SNE
+				printf("SNE %x, %x\n", x,kk);
+				break;
+			case 5:
+				//
+				printf("SE %x, %x\n", x, kk);
+				break;
+			case 6:
+				//
+				printf("LD %x, %x\n", x, kk);
+				break;
+			case 7:
+				//
+				printf("ADD %x, %x\n", x, kk);
+				break;
+			case 8:
+				switch (n) {
+					case 0:
+						printf("LD %x, %x\n", x, y);
+						break;
+					case 1:
+						printf("OR %x, %x\n", x, y);
+						break;
+					case 2:
+						printf("AND %x, %x\n", x, y);
+						break;
+					case 3:
+						printf("XOR %x, %x\n", x, y);
+						break;
+					case 4:
+						printf("ADD %x, %x\n", x, y);
+						break;
+					case 5:
+						printf("SUB %x, %x\n", x, y);
+						break;
+					case 6:
+						printf("SHR %x\n", x);
+						break;
+					case 7:
+						printf("SUBN %x, %x\n", x, y);
+						break;
+					case 0xE:
+						printf("SHL %x\n", x);
+						break;
+				}
+				break;
+			case 9:
+				//
+				printf("SNE %x, %x\n", x, y);
+				break;
+			case 0xA:
+				printf("LD I, %x\n", nnn);
+				break;
+			case 0xB:
+				printf("JP V0, %x\n", nnn);
+				break;
+			case 0xC:
+				printf("RND %x, %x\n", x,kk);
+				break;
+			case 0xD:
+					printf("DRW %x,%x,%x\n", x,y,n);
+				break;
+			case 0xE:
+				if(kk == 0x9E){
+					printf("SKP %x\n", x);
+				}else if(kk == 0xA1){
+					printf("SKNP %x\n", x);
+				}
+				
+				break;
+			case 0xF:
+				
+				switch(kk) {
+					case 0x07:
+						printf("LD %x, DT\n", x);
+					break;
+					case 0x0A:
+						printf("LD %x, K\n", x);
+					break;
+					case 0x15:
+						printf("LD DT, %x\n", x);
+					break;
+					case 0x18:
+						printf("LD ST, %x K\n", x);
+					break;
+					case 0x1E:
+						printf("ADD I, %x\n", x);
+					break;
+					case 0x29:
+						printf("LD F, %x\n", x);
+					break;
+					case 0x33:
+						printf("LD B, %x\n", x);
+					break;
+					case 0x55:
+						printf("LD [I], %x\n", x);
+					break;
+					case 0x65:
+						printf("LD %x, [I]\n", x);
+					break;
+				}
+				break;
 		}
 		
 		
-		uint16_t nnn = opcode & 0x0FFF;//esto es una mascara de bits
-		uint8_t kk = opcode & 0xFF;
-		uint8_t n = opcode & 0xF;
-		uint8_t x = (opcode >> 8) | 0xF;
-		//uint8_t y = (opcode >> 4) | ;
-		
-		printf("%x",opcode);
+		//printf("%x",opcode);
 
 		
 	}
